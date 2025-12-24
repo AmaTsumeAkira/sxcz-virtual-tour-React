@@ -205,10 +205,10 @@ function App() {
 
       {/* Bottom Controls */}
       <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 md:left-auto md:right-10 md:translate-x-0 z-10 flex items-center">
-        <div className="flex bg-black/50 backdrop-blur-3xl p-1.5 md:p-2 rounded-full md:rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <div className="flex items-center bg-black/50 backdrop-blur-3xl p-1 md:p-2 rounded-full md:rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] max-w-[95vw] overflow-x-auto no-scrollbar">
           <button 
             onClick={() => setIsAutorotateEnabled(!isAutorotateEnabled)}
-            className={`p-3 md:p-4 rounded-full md:rounded-2xl transition-all duration-500 group relative ${isAutorotateEnabled ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'hover:bg-white/10 text-white/60'}`}
+            className={`p-2.5 md:p-4 rounded-full md:rounded-2xl transition-all duration-500 group relative shrink-0 ${isAutorotateEnabled ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'hover:bg-white/10 text-white/60'}`}
             title="自动旋转"
           >
             <div className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center transition-transform duration-700 ${isAutorotateEnabled ? 'rotate-180' : ''}`}>
@@ -220,7 +220,7 @@ function App() {
           </button>
           <button 
             onClick={() => setIsGyroEnabled(!isGyroEnabled)}
-            className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all duration-500 group relative ${isGyroEnabled ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'hover:bg-white/10 text-white/60'}`}
+            className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl transition-all duration-500 group relative shrink-0 ${isGyroEnabled ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'hover:bg-white/10 text-white/60'}`}
             title="陀螺仪"
           >
             <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
@@ -231,11 +231,11 @@ function App() {
               </svg>
             </div>
           </button>          
-          <div className="w-px h-6 md:h-8 bg-white/10 self-center mx-1"></div>
+          <div className="w-px h-6 md:h-8 bg-white/10 self-center mx-0.5 md:mx-1 shrink-0"></div>
 
           <button 
             onClick={toggleMute}
-            className="p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group"
+            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
             title="背景音乐"
           >
             <img src={isMuted ? `${baseUrl}/img/pause.png` : `${baseUrl}/img/play.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Mute" />
@@ -243,7 +243,7 @@ function App() {
 
           <button 
             onClick={toggleFullscreen}
-            className="p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group"
+            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
             title="全屏显示"
           >
             <img src={`${baseUrl}/img/fullscreen.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Fullscreen" />
@@ -251,19 +251,19 @@ function App() {
 
           <button 
             onClick={toggleInfo}
-            className="p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group"
+            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
             title="帮助说明"
           >
             <img src={`${baseUrl}/img/info.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Help" />
           </button>
 
-          <div className="w-px h-6 md:h-8 bg-white/10 self-center mx-1"></div>
+          <div className="w-px h-6 md:h-8 bg-white/10 self-center mx-0.5 md:mx-1 shrink-0"></div>
 
           <a 
             href="https://www.sxftc.edu.cn/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group flex items-center justify-center"
+            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group flex items-center justify-center shrink-0"
             title="访问官网"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity">
