@@ -8,21 +8,56 @@ interface PanoramaViewerProps {
   isAutorotateEnabled: boolean;
   isGyroEnabled: boolean;
   onInfoHotspotClick: (title: string, text: string) => void;
+  initialView?: { yaw: number; pitch: number; fov: number };
 }
 
-const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ 
-  currentSceneId, 
-  onSceneChange, 
-  isAutorotateEnabled,
-  isGyroEnabled,
-  onInfoHotspotClick
-}) => {
+const PanoramaViewer = React.forwardRef<any, PanoramaViewerProps>((props, ref) => {
+  const { 
+    currentSceneId, 
+    onSceneChange, 
+    isAutorotateEnabled,
+    isGyroEnabled,
+    onInfoHotspotClick,
+    initialView
+  } = props;
+
   const viewerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scenesRef = useRef<Record<string, any>>({});
   const autorotateRef = useRef<any>(null);
   const onSceneChangeRef = useRef(onSceneChange);
   const deviceOrientationControlMethodRef = useRef<any>(null);
+
+  React.useImperativeHandle(ref, () => ({
+    getCurrentView: () => {
+      if (viewerRef.current) {
+        const scene = viewerRef.current.scene();
+        const view = scene.view();
+        return {
+          sceneId: currentSceneId,
+          yaw: view.yaw(),
+          pitch: view.pitch(),
+          fov: view.fov()
+        };
+      }
+      return null;
+    },
+    takeScreenshot: () => {
+      if (viewerRef.current && containerRef.current) {
+        try {
+          // Find the canvas element within the container
+          const canvas = containerRef.current.querySelector('canvas');
+          if (canvas) {
+            return canvas.toDataURL('image/jpeg', 0.8);
+          }
+        } catch (err) {
+          console.error('Failed to take screenshot:', err);
+          return null;
+        }
+      }
+      return null;
+    }
+  }));
 
   useEffect(() => {
     onSceneChangeRef.current = onSceneChange;
@@ -40,7 +75,8 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
     }
 
     const viewerOpts = {
-      controls: { mouseViewMode: APP_DATA.settings.mouseViewMode }
+      controls: { mouseViewMode: APP_DATA.settings.mouseViewMode },
+      stage: { preserveDrawingBuffer: true }
     };
 
     const viewer = new Marzipano.Viewer(containerRef.current, viewerOpts);
@@ -79,7 +115,10 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
         120*Math.PI/180
       );
       
-      const view = new Marzipano.RectilinearView(sceneData.initialViewParameters, limiter);
+      const view = new Marzipano.RectilinearView(
+        (sceneData.id === currentSceneId && initialView) ? initialView : sceneData.initialViewParameters, 
+        limiter
+      );
       const scene = viewer.createScene({
         source: source,
         geometry: geometry,
@@ -160,7 +199,7 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
     const initialScene = scenesRef.current[currentSceneId];
     if (initialScene) {
       console.log('Switching to initial scene:', currentSceneId);
-      initialScene.switchTo({ transitionDuration: 1 });
+      initialScene.switchTo({ transitionDuration: 1500 });
     }
 
     return () => {
@@ -179,8 +218,10 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
 
       console.log('Switching scene to:', currentSceneId);
       
-      // Use transitionDuration: 0 to ensure instant swap
-      scene.switchTo({ transitionDuration: 0 });
+      // Use transitionDuration for smooth effect
+      scene.switchTo({ 
+        transitionDuration: 1000
+      });
     }
   }, [currentSceneId]);
 
@@ -227,6 +268,6 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
   return (
     <div ref={containerRef} className="w-full h-full absolute inset-0" />
   );
-};
+});
 
 export default PanoramaViewer;

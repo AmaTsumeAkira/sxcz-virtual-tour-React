@@ -1,19 +1,53 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { toJpeg } from 'html-to-image';
 import PanoramaViewer from './components/PanoramaViewer';
 import { APP_DATA } from './data';
 
 function App() {
   const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
-  const [currentSceneId, setCurrentSceneId] = useState(APP_DATA.scenes[0].id);
+  
+  // Parse URL parameters for initial state
+  const getInitialState = () => {
+    const params = new URLSearchParams(window.location.search);
+    const sceneId = params.get('scene');
+    const yaw = params.get('yaw');
+    const pitch = params.get('pitch');
+    const fov = params.get('fov');
+    
+    return {
+      sceneId: sceneId && APP_DATA.scenes.find(s => s.id === sceneId) ? sceneId : APP_DATA.scenes[0].id,
+      view: yaw && pitch && fov ? {
+        yaw: parseFloat(yaw),
+        pitch: parseFloat(pitch),
+        fov: parseFloat(fov)
+      } : undefined
+    };
+  };
+
+  const initialState = getInitialState();
+  const [currentSceneId, setCurrentSceneId] = useState(initialState.sceneId);
+  const [initialView] = useState(initialState.view);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(!initialState.view); // Skip welcome if shared link
   const [isMuted, setIsMuted] = useState(false);
   const [isAutorotateEnabled, setIsAutorotateEnabled] = useState(APP_DATA.settings.autorotateEnabled);
   const [isGyroEnabled, setIsGyroEnabled] = useState(false);
   const [infoHotspotData, setInfoHotspotData] = useState<{title: string, text: string} | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showShareToast, setShowShareToast] = useState(false);
+  const [shareCardData, setShareCardData] = useState<{
+    screenshot: string;
+    url: string;
+    sceneName: string;
+  } | null>(null);
+  const [finalShareImage, setFinalShareImage] = useState<string | null>(null);
+  const [isGeneratingCard, setIsGeneratingCard] = useState(false);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
+  const viewerRef = useRef<any>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   const handleSceneChange = useCallback((id: string) => {
     setCurrentSceneId(id);
@@ -22,6 +56,76 @@ function App() {
   const handleInfoHotspotClick = useCallback((title: string, text: string) => {
     setInfoHotspotData({ title, text });
   }, []);
+
+  const handleShare = () => {
+    if (viewerRef.current) {
+      const view = viewerRef.current.getCurrentView();
+      const screenshot = viewerRef.current.takeScreenshot();
+      
+      if (view && screenshot) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('scene', view.sceneId);
+        url.searchParams.set('yaw', view.yaw.toFixed(4));
+        url.searchParams.set('pitch', view.pitch.toFixed(4));
+        url.searchParams.set('fov', view.fov.toFixed(4));
+        
+        const sceneName = APP_DATA.scenes.find(s => s.id === view.sceneId)?.name || '全景校园';
+        
+        setFinalShareImage(null);
+        setShareCardData({
+          screenshot,
+          url: url.toString(),
+          sceneName
+        });
+        setIsGeneratingCard(true);
+
+        // Also copy to clipboard as fallback
+        navigator.clipboard.writeText(url.toString()).then(() => {
+          setShowShareToast(true);
+          setTimeout(() => setShowShareToast(false), 2000);
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (shareCardData && isGeneratingCard && shareCardRef.current) {
+      // Wait longer for all assets (especially the screenshot data URL) to be ready in the DOM
+      const timer = setTimeout(() => {
+        const filter = (node: HTMLElement) => {
+          const exclusionClasses = ['animate-spin', 'animate-pulse'];
+          return !exclusionClasses.some(cls => node.classList?.contains(cls));
+        };
+
+        toJpeg(shareCardRef.current!, { 
+          quality: 0.95, 
+          backgroundColor: '#ffffff',
+          pixelRatio: 2, // Higher quality
+          filter: filter
+        })
+          .then((dataUrl) => {
+            // Check if the generated image is too small (likely failed)
+            if (dataUrl.length < 1000) {
+              throw new Error('Generated image is empty');
+            }
+            setFinalShareImage(dataUrl);
+            setIsGeneratingCard(false);
+          })
+          .catch((err) => {
+            console.error('Failed to generate share image:', err);
+            // Retry once after a longer delay if it failed
+            setTimeout(() => {
+              if (shareCardRef.current) {
+                toJpeg(shareCardRef.current!, { quality: 0.9, backgroundColor: '#fff', pixelRatio: 2 })
+                  .then(setFinalShareImage)
+                  .finally(() => setIsGeneratingCard(false));
+              }
+            }, 1000);
+          });
+      }, 1000); // Increased delay to 1s
+      return () => clearTimeout(timer);
+    }
+  }, [shareCardData, isGeneratingCard]);
 
   const currentScene = APP_DATA.scenes.find(s => s.id === currentSceneId) || APP_DATA.scenes[0];
 
@@ -60,11 +164,13 @@ function App() {
     <div className="relative w-full h-full overflow-hidden bg-black text-white font-sans">
       {/* Panorama Viewer */}
       <PanoramaViewer 
+        ref={viewerRef}
         currentSceneId={currentSceneId} 
-        onSceneChange={handleSceneChange} 
+        onSceneChange={handleSceneChange}
         isAutorotateEnabled={isAutorotateEnabled}
         isGyroEnabled={isGyroEnabled}
         onInfoHotspotClick={handleInfoHotspotClick}
+        initialView={initialView}
       />
 
       {/* Top Title Bar */}
@@ -257,21 +363,17 @@ function App() {
             <img src={`${baseUrl}/img/info.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Help" />
           </button>
 
-          <div className="w-px h-6 md:h-8 bg-white/10 self-center mx-0.5 md:mx-1 shrink-0"></div>
-
-          <a 
-            href="https://www.sxftc.edu.cn/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group flex items-center justify-center shrink-0"
-            title="访问官网"
+          <button 
+            onClick={handleShare}
+            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
+            title="分享当前视角"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity">
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 md:w-5 md:h-5 opacity-70 group-hover:opacity-100 transition-opacity">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
             </svg>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -395,6 +497,178 @@ function App() {
       )}
 
       <audio ref={audioRef} src={`${baseUrl}/sxcz.mp3`} loop />
+
+      {/* Share Card Modal */}
+      {shareCardData && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 overflow-y-auto">
+          {/* Hidden Source DOM for Capture */}
+          <div style={{ position: 'fixed', left: '-9999px', top: 0 }}>
+            <div 
+              ref={shareCardRef}
+              className="bg-white flex flex-col font-sans relative"
+              style={{ width: '600px', minHeight: '960px' }}
+            >
+              {/* 1. Main Visual Area - Full Bleed with Inner Border */}
+              <div className="relative h-[600px] w-full shrink-0 p-4 pb-0">
+                <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-sm">
+                  <img src={shareCardData.screenshot} className="w-full h-full object-cover" alt="Screenshot" />
+                  
+                  {/* Cinematic Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90"></div>
+                  
+                  {/* Top Badge */}
+                  <div className="absolute top-6 left-6">
+                    <div className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold tracking-[0.2em] uppercase rounded-full">
+                      Virtual Tour
+                    </div>
+                  </div>
+
+                  {/* Scene Info - Magazine Style */}
+                  <div className="absolute bottom-10 left-8 right-8">
+                    <div className="flex flex-col items-start">
+                      <h3 className="text-white text-[3.2rem] font-black tracking-tight leading-[1.1] mb-4 drop-shadow-lg">
+                        {shareCardData.sceneName}
+                      </h3>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-px w-12 bg-blue-500"></div>
+                        <p className="text-blue-100 text-sm font-medium tracking-[0.15em] uppercase">
+                          Shanxi Finance & Taxation College
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Info & QR Area - Clean Minimalist */}
+              <div className="flex-1 bg-white relative flex flex-col px-10 py-8">
+                
+                <div className="flex-1 flex flex-col">
+                  
+                  {/* Middle Section: Info Grid */}
+                  <div className="flex items-center justify-between mb-8">
+                    {/* Left: Producer Info */}
+                    <div className="flex flex-col justify-center space-y-6">
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold tracking-[0.25em] uppercase mb-4">Presented By</p>
+                        <div className="flex items-center space-x-4">
+                           <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-900 border border-slate-100">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+                              </svg>
+                           </div>
+                           <div>
+                              <p className="text-slate-900 font-bold text-xl tracking-tight">信息科技学院</p>
+                              <p className="text-slate-400 text-xs font-medium mt-1 tracking-widest uppercase">分团委出品</p>
+                           </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <p className="text-slate-600 font-mono text-xs font-bold">
+                            {window.location.hostname}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: QR Code */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-blue-600/5 blur-2xl rounded-full"></div>
+                      <div className="relative bg-white p-3 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50">
+                        <QRCodeCanvas 
+                          value={shareCardData.url}
+                          size={120}
+                          level="H"
+                          includeMargin={true}
+                          fgColor="#1e293b"
+                        />
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
+                          扫码体验全景
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Section: WeChat Banner - Integrated */}
+                  <div className="mt-auto pt-6 border-t border-slate-100">
+                    <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between group">
+                      <div className="flex flex-col">
+                        <p className="text-slate-900 font-bold text-sm mb-1">更多精彩校园风光</p>
+                        <p className="text-slate-400 text-xs">请在微信搜索关注</p>
+                      </div>
+                      <div className="h-10 w-px bg-slate-200 mx-4"></div>
+                      <div className="flex-1 max-w-[240px]">
+                         <img 
+                            src={`${baseUrl}/扫码_搜索联合传播样式-白色版.png`} 
+                            className="w-full h-auto block mix-blend-darken opacity-90 grayscale-[20%] group-hover:grayscale-0 transition-all duration-500" 
+                            alt="WeChat Banner" 
+                          />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-sm w-full animate-float-slow">
+            <div className="relative">
+              {/* Final Image for Saving */}
+              {finalShareImage ? (
+                <div className="bg-white rounded-[2rem] overflow-hidden shadow-2xl">
+                  <img src={finalShareImage} className="w-full h-auto block" alt="Share Card" />
+                  <div className="bg-blue-600 px-6 py-4 text-center">
+                    <p className="text-[10px] text-white font-bold animate-pulse">💡 长按上方图片保存并分享</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white/10 backdrop-blur-md rounded-[2rem] aspect-[3/4] flex flex-col items-center justify-center text-white space-y-6 border border-white/10">
+                  <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-black text-lg mb-1">正在生成精美卡片</p>
+                    <p className="text-white/50 text-xs">请稍候，正在为您捕获校园美景...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Close Button */}
+              <button 
+                onClick={() => {
+                  setShareCardData(null);
+                  setFinalShareImage(null);
+                }}
+                className="absolute -top-12 right-0 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white border border-white/20"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => {
+                setShareCardData(null);
+                setFinalShareImage(null);
+              }}
+              className="w-full mt-6 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold transition-all border border-white/10"
+            >
+              返回导览
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Share Toast */}
+      {showShareToast && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 bg-blue-600 text-white rounded-full shadow-2xl font-bold animate-bounce-in">
+          链接已复制到剪贴板
+        </div>
+      )}
     </div>
   );
 }
