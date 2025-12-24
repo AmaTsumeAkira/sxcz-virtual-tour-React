@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/sxcz-virtual-tour-React/',
+  base: process.env.GITHUB_ACTIONS ? '/sxcz-virtual-tour-React/' : '/',
   plugins: [
     react(),
     tailwindcss(),
