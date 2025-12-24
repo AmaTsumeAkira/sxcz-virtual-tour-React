@@ -36,7 +36,6 @@ function App() {
   const [infoHotspotData, setInfoHotspotData] = useState<{title: string, text: string} | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showShareToast, setShowShareToast] = useState(false);
   const [shareCardData, setShareCardData] = useState<{
     screenshot: string;
     url: string;
@@ -681,13 +680,6 @@ function App() {
               返回导览
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Share Toast */}
-      {showShareToast && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 bg-blue-600 text-white rounded-full shadow-2xl font-bold animate-bounce-in">
-          链接已复制到剪贴板
         </div>
       )}
     </div>
