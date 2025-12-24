@@ -8,7 +8,6 @@ interface PanoramaViewerProps {
   isAutorotateEnabled: boolean;
   isGyroEnabled: boolean;
   onInfoHotspotClick: (title: string, text: string) => void;
-  onLoadingChange: (isLoading: boolean) => void;
 }
 
 const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ 
@@ -16,8 +15,7 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
   onSceneChange, 
   isAutorotateEnabled,
   isGyroEnabled,
-  onInfoHotspotClick,
-  onLoadingChange
+  onInfoHotspotClick
 }) => {
   const viewerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -179,15 +177,12 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({
       // Check if it's already the current scene to avoid redundant transitions
       if (viewerRef.current.scene() === scene) return;
 
-      onLoadingChange(true);
       console.log('Switching scene to:', currentSceneId);
       
       // Use transitionDuration: 0 to ensure instant swap
-      scene.switchTo({ transitionDuration: 0 }, () => {
-        onLoadingChange(false);
-      });
+      scene.switchTo({ transitionDuration: 0 });
     }
-  }, [currentSceneId, onLoadingChange]);
+  }, [currentSceneId]);
 
   useEffect(() => {
     if (viewerRef.current && autorotateRef.current) {

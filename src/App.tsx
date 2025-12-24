@@ -10,7 +10,6 @@ function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isAutorotateEnabled, setIsAutorotateEnabled] = useState(APP_DATA.settings.autorotateEnabled);
   const [isGyroEnabled, setIsGyroEnabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [infoHotspotData, setInfoHotspotData] = useState<{title: string, text: string} | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,10 +21,6 @@ function App() {
 
   const handleInfoHotspotClick = useCallback((title: string, text: string) => {
     setInfoHotspotData({ title, text });
-  }, []);
-
-  const handleLoadingChange = useCallback((loading: boolean) => {
-    setIsLoading(loading);
   }, []);
 
   const currentScene = APP_DATA.scenes.find(s => s.id === currentSceneId) || APP_DATA.scenes[0];
@@ -70,7 +65,6 @@ function App() {
         isAutorotateEnabled={isAutorotateEnabled}
         isGyroEnabled={isGyroEnabled}
         onInfoHotspotClick={handleInfoHotspotClick}
-        onLoadingChange={handleLoadingChange}
       />
 
       {/* Top Title Bar */}
