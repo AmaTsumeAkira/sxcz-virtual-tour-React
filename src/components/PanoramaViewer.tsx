@@ -44,10 +44,11 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
 
     // Initialize all scenes
     console.log('Initializing scenes and hotspots...');
+    const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     APP_DATA.scenes.forEach((sceneData: Scene) => {
       const source = Marzipano.ImageUrlSource.fromString(
-        `/tiles/${sceneData.id}/{z}/{f}/{y}/{x}.jpg`,
-        { cubeMapPreviewUrl: `/tiles/${sceneData.id}/preview.jpg` }
+        `${baseUrl}/tiles/${sceneData.id}/{z}/{f}/{y}/{x}.jpg`,
+        { cubeMapPreviewUrl: `${baseUrl}/tiles/${sceneData.id}/preview.jpg` }
       );
       
       const geometry = new Marzipano.CubeGeometry(sceneData.levels);
@@ -72,7 +73,7 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
         element.className = 'link-hotspot animate-pulse-slow cursor-pointer';
         
         const img = document.createElement('img');
-        img.src = '/img/link.png';
+        img.src = `${baseUrl}/img/link.png`;
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.display = 'block';

@@ -204,7 +204,7 @@ function App() {
         </div>
       )}
 
-      <audio ref={audioRef} src="/sxcz.mp3" loop />
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/sxcz.mp3`} loop />
     </div>
   );
 }
