@@ -126,11 +126,11 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
         element.className = 'info-hotspot animate-pulse-slow cursor-pointer';
         
         const img = document.createElement('img');
-        img.src = '/img/info.png';
+        img.src = `${baseUrl}/img/info.png`;
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.display = 'block';
-        img.onerror = () => console.error('Failed to load hotspot image: /img/info.png');
+        img.onerror = () => console.error(`Failed to load hotspot image: ${baseUrl}/img/info.png`);
         
         element.appendChild(img);
         

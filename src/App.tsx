@@ -3,6 +3,7 @@ import PanoramaViewer from './components/PanoramaViewer';
 import { APP_DATA } from './data';
 
 function App() {
+  const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
   const [currentSceneId, setCurrentSceneId] = useState(APP_DATA.scenes[0].id);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
@@ -108,7 +109,7 @@ function App() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity duration-500">
           <div className="bg-glass p-10 rounded-[2rem] border border-white/20 shadow-2xl max-w-lg w-full mx-4 text-center transform transition-all scale-100">
             <div className="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-blue-400/30">
-              <img src="/img/link.png" className="w-12 h-12 animate-pulse" alt="Logo" />
+              <img src={`${baseUrl}/img/link.png`} className="w-12 h-12 animate-pulse" alt="Logo" />
             </div>
             <h2 className="text-4xl font-black mb-4 tracking-tight">山西财专</h2>
             <p className="text-blue-200 text-xl mb-8 font-light tracking-widest">“云上”游校园</p>
@@ -145,21 +146,21 @@ function App() {
           className="p-4 bg-glass rounded-2xl hover:bg-white/20 transition-all shadow-lg border border-white/10 group"
           title="背景音乐"
         >
-          <img src={isMuted ? "/img/pause.png" : "/img/play.png"} className="w-6 h-6 opacity-70 group-hover:opacity-100" alt="Mute" />
+          <img src={isMuted ? `${baseUrl}/img/pause.png` : `${baseUrl}/img/play.png`} className="w-6 h-6 opacity-70 group-hover:opacity-100" alt="Mute" />
         </button>
         <button 
           onClick={toggleFullscreen}
           className="p-4 bg-glass rounded-2xl hover:bg-white/20 transition-all shadow-lg border border-white/10 group"
           title="全屏显示"
         >
-          <img src="/img/fullscreen.png" className="w-6 h-6 opacity-70 group-hover:opacity-100" alt="Fullscreen" />
+          <img src={`${baseUrl}/img/fullscreen.png`} className="w-6 h-6 opacity-70 group-hover:opacity-100" alt="Fullscreen" />
         </button>
         <button 
           onClick={toggleInfo}
           className="p-4 bg-glass rounded-2xl hover:bg-white/20 transition-all shadow-lg border border-white/10 group"
           title="帮助说明"
         >
-          <img src="/img/info.png" className="w-6 h-6 opacity-70 group-hover:opacity-100" alt="Help" />
+          <img src={`${baseUrl}/img/info.png`} className="w-6 h-6 opacity-70 group-hover:opacity-100" alt="Help" />
         </button>
       </div>
 
