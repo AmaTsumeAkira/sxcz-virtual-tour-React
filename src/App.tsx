@@ -310,8 +310,8 @@ function App() {
       )}
 
       {/* Bottom Controls */}
-      <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 md:left-auto md:right-10 md:translate-x-0 z-10 flex items-center">
-        <div className="flex items-center bg-black/50 backdrop-blur-3xl p-1 md:p-2 rounded-full md:rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] max-w-[95vw] overflow-x-auto no-scrollbar">
+      <div className="absolute bottom-16 md:bottom-10 left-1/2 -translate-x-1/2 md:left-auto md:right-10 md:translate-x-0 z-50 flex items-center">
+        <div className="flex items-center bg-black/60 backdrop-blur-3xl p-1.5 md:p-2 rounded-full md:rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-[92vw] overflow-x-auto no-scrollbar">
           <button 
             onClick={() => setIsAutorotateEnabled(!isAutorotateEnabled)}
             className={`p-2.5 md:p-4 rounded-full md:rounded-2xl transition-all duration-500 group relative shrink-0 ${isAutorotateEnabled ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'hover:bg-white/10 text-white/60'}`}
@@ -378,8 +378,8 @@ function App() {
       </div>
 
       {/* ICP Filing */}
-      <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[100] text-[9px] md:text-[10px] text-white/10 pointer-events-auto">
-        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/30 transition-colors">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-[9px] md:text-[10px] text-white/20 pointer-events-auto whitespace-nowrap">
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">
           陕ICP备20011108号-1
         </a>
       </div>
