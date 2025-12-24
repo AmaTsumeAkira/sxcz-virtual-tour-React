@@ -78,12 +78,6 @@ function App() {
           sceneName
         });
         setIsGeneratingCard(true);
-
-        // Also copy to clipboard as fallback
-        navigator.clipboard.writeText(url.toString()).then(() => {
-          setShowShareToast(true);
-          setTimeout(() => setShowShareToast(false), 2000);
-        });
       }
     }
   };
@@ -208,6 +202,14 @@ function App() {
         </div>
       </button>
 
+      {/* Mobile Info Button */}
+      <button 
+        onClick={toggleInfo}
+        className="absolute top-4 right-4 z-20 md:hidden p-3.5 bg-glass-dark rounded-xl border border-white/10 shadow-xl"
+      >
+        <img src={`${baseUrl}/img/info.png`} className="w-5 h-5 opacity-70" alt="Help" />
+      </button>
+
       {/* Sidebar */}
       <div className={`absolute top-0 left-0 h-full w-72 md:w-85 bg-black/40 backdrop-blur-3xl z-30 transform transition-all duration-500 ease-out border-r border-white/10 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 md:p-8 h-full flex flex-col">
@@ -311,10 +313,10 @@ function App() {
 
       {/* Bottom Controls */}
       <div className="absolute bottom-16 md:bottom-10 left-1/2 -translate-x-1/2 md:left-auto md:right-10 md:translate-x-0 z-50 flex items-center">
-        <div className="flex items-center bg-black/60 backdrop-blur-3xl p-1.5 md:p-2 rounded-full md:rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-[92vw] overflow-x-auto no-scrollbar">
+        <div className="flex items-center bg-black/60 backdrop-blur-3xl p-1.5 md:p-2 rounded-full md:rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-[96vw] md:w-auto md:max-w-none overflow-x-auto no-scrollbar justify-around md:justify-start md:space-x-1">
           <button 
             onClick={() => setIsAutorotateEnabled(!isAutorotateEnabled)}
-            className={`p-2.5 md:p-4 rounded-full md:rounded-2xl transition-all duration-500 group relative shrink-0 ${isAutorotateEnabled ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'hover:bg-white/10 text-white/60'}`}
+            className={`p-2 md:p-3 rounded-full md:rounded-2xl transition-all duration-500 group relative shrink-0 flex flex-col items-center space-y-1 ${isAutorotateEnabled ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'hover:bg-white/10 text-white/60'}`}
             title="自动旋转"
           >
             <div className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center transition-transform duration-700 ${isAutorotateEnabled ? 'rotate-180' : ''}`}>
@@ -323,10 +325,11 @@ function App() {
                 <path d="M21 3v9h-9" />
               </svg>
             </div>
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">旋转</span>
           </button>
           <button 
             onClick={() => setIsGyroEnabled(!isGyroEnabled)}
-            className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl transition-all duration-500 group relative shrink-0 ${isGyroEnabled ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'hover:bg-white/10 text-white/60'}`}
+            className={`p-2 md:p-3 rounded-xl md:rounded-2xl transition-all duration-500 group relative shrink-0 flex flex-col items-center space-y-1 ${isGyroEnabled ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'hover:bg-white/10 text-white/60'}`}
             title="陀螺仪"
           >
             <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
@@ -336,43 +339,61 @@ function App() {
                 <circle cx="12" cy="12" r="2" fill="currentColor" />
               </svg>
             </div>
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">感应</span>
           </button>          
           <div className="w-px h-6 md:h-8 bg-white/10 self-center mx-0.5 md:mx-1 shrink-0"></div>
 
           <button 
             onClick={toggleMute}
-            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
-            title="背景音乐"
+            className="p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0 flex flex-col items-center space-y-1"
+            title={isMuted ? "播放音乐" : "暂停音乐"}
           >
-            <img src={isMuted ? `${baseUrl}/img/pause.png` : `${baseUrl}/img/play.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Mute" />
+            <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
+              {isMuted ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-5 md:h-5 opacity-70 group-hover:opacity-100 transition-opacity">
+                  <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" fillOpacity="0.2" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 md:w-5 md:h-5 opacity-70 group-hover:opacity-100 transition-opacity">
+                  <rect x="6" y="4" width="4" height="16" fill="currentColor" fillOpacity="0.2" />
+                  <rect x="14" y="4" width="4" height="16" fill="currentColor" fillOpacity="0.2" />
+                </svg>
+              )}
+            </div>
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">音乐</span>
           </button>
 
           <button 
             onClick={toggleFullscreen}
-            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
+            className="p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0 flex flex-col items-center space-y-1"
             title="全屏显示"
           >
             <img src={`${baseUrl}/img/fullscreen.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Fullscreen" />
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">全屏</span>
           </button>
 
           <button 
             onClick={toggleInfo}
-            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
+            className="p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0 hidden md:flex flex-col items-center space-y-1"
             title="帮助说明"
           >
             <img src={`${baseUrl}/img/info.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Help" />
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">帮助</span>
           </button>
 
           <button 
             onClick={handleShare}
-            className="p-2.5 md:p-4 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0"
+            className="p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-white/10 transition-all text-white/60 hover:text-white group shrink-0 flex flex-col items-center space-y-1"
             title="分享当前视角"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 md:w-5 md:h-5 opacity-70 group-hover:opacity-100 transition-opacity">
-              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-              <polyline points="16 6 12 2 8 6" />
-              <line x1="12" y1="2" x2="12" y2="15" />
-            </svg>
+            <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 md:w-5 md:h-5 opacity-70 group-hover:opacity-100 transition-opacity">
+                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" y1="2" x2="12" y2="15" />
+              </svg>
+            </div>
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">分享</span>
           </button>
         </div>
       </div>
@@ -386,16 +407,16 @@ function App() {
 
       {/* Info Modal */}
       {isInfoOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-xl transition-all duration-500">
-          <div className="bg-glass p-10 rounded-[2.5rem] border border-white/20 shadow-2xl max-w-md w-full mx-4 relative animate-float">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-xl transition-all duration-500 p-4">
+          <div className="bg-glass p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border border-white/20 shadow-2xl max-w-md w-full relative animate-float max-h-[90dvh] overflow-y-auto no-scrollbar">
             <button 
               onClick={() => setIsInfoOpen(false)}
-              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+              className="absolute top-4 right-4 md:top-6 md:right-6 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/50 hover:text-white z-10"
             >
               ✕
             </button>
-            <h3 className="text-3xl font-black mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">操作指南</h3>
-            <div className="space-y-6 text-white/70 leading-relaxed font-medium">
+            <h3 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">操作指南</h3>
+            <div className="space-y-5 md:space-y-6 text-white/70 leading-relaxed font-medium">
               <div className="flex items-start space-x-4 group">
                 <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all">
                   <span className="text-xs font-bold">1</span>
@@ -446,27 +467,28 @@ function App() {
                 </p>
               </div>
 
-              <a 
-                href="https://www.sxftc.edu.cn/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="mt-6 flex items-center justify-center space-x-2 py-3 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-400 text-xs font-bold transition-all group"
-              >
-                <span>访问学校官网</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform">
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </a>
+              <div className="mt-8 flex items-center space-x-3">
+                <a 
+                  href="https://www.sxftc.edu.cn/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center space-x-2 py-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-2xl text-blue-400 text-xs font-bold transition-all group"
+                >
+                  <span>访问官网</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </a>
+                <button 
+                  onClick={() => setIsInfoOpen(false)}
+                  className="flex-1 py-4 bg-white text-blue-950 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-95"
+                >
+                  我知道了
+                </button>
+              </div>
             </div>
-
-            <button 
-              onClick={() => setIsInfoOpen(false)}
-              className="w-full mt-8 py-4 bg-white text-blue-950 rounded-2xl font-black transition-all shadow-lg active:scale-95"
-            >
-              我知道了
-            </button>
           </div>
         </div>
       )}
@@ -505,111 +527,110 @@ function App() {
           <div style={{ position: 'fixed', left: '-9999px', top: 0 }}>
             <div 
               ref={shareCardRef}
-              className="bg-white flex flex-col font-sans relative"
+              className="bg-[#F8FAFC] flex flex-col font-sans relative overflow-hidden"
               style={{ width: '600px', minHeight: '960px' }}
             >
-              {/* 1. Main Visual Area - Full Bleed with Inner Border */}
-              <div className="relative h-[600px] w-full shrink-0 p-4 pb-0">
-                <div className="relative w-full h-full rounded-3xl overflow-hidden shadow-sm">
-                  <img src={shareCardData.screenshot} className="w-full h-full object-cover" alt="Screenshot" />
-                  
-                  {/* Cinematic Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90"></div>
-                  
-                  {/* Top Badge */}
-                  <div className="absolute top-6 left-6">
-                    <div className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-bold tracking-[0.2em] uppercase rounded-full">
-                      Virtual Tour
-                    </div>
+              {/* 1. Top Visual Area - Cinematic Impact */}
+              <div className="relative h-[560px] w-full shrink-0">
+                <img src={shareCardData.screenshot} className="w-full h-full object-cover" alt="Screenshot" />
+                
+                {/* Professional Gradient Mask - Stronger at bottom for text legibility */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                
+                {/* Glassmorphism Badge */}
+                <div className="absolute top-8 left-8">
+                  <div className="px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-[10px] font-black tracking-[0.3em] uppercase rounded-full shadow-2xl">
+                    Virtual Tour
                   </div>
+                </div>
 
-                  {/* Scene Info - Magazine Style */}
-                  <div className="absolute bottom-10 left-8 right-8">
-                    <div className="flex flex-col items-start">
-                      <h3 className="text-white text-[3.2rem] font-black tracking-tight leading-[1.1] mb-4 drop-shadow-lg">
-                        {shareCardData.sceneName}
-                      </h3>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-px w-12 bg-blue-500"></div>
-                        <p className="text-blue-100 text-sm font-medium tracking-[0.15em] uppercase">
-                          Shanxi Finance & Taxation College
-                        </p>
-                      </div>
-                    </div>
+                {/* Scene Title - No Truncation, Dynamic Layout */}
+                <div className="absolute bottom-16 left-10 right-10">
+                  <div className="flex flex-col items-start space-y-3">
+                    <h3 className="text-white text-6xl font-black tracking-tighter leading-[1.1] drop-shadow-2xl">
+                      {shareCardData.sceneName}
+                    </h3>
+                    <p className="text-blue-400 text-xs font-black tracking-[0.4em] uppercase opacity-90">
+                      Shanxi Finance & Taxation College
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* 2. Info & QR Area - Clean Minimalist */}
-              <div className="flex-1 bg-white relative flex flex-col px-10 py-8">
-                
-                <div className="flex-1 flex flex-col">
+              {/* 2. Floating Info Card - The Core Content */}
+              <div className="relative px-6 -mt-10 z-10">
+                <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] p-10 flex items-stretch justify-between border border-slate-50">
                   
-                  {/* Middle Section: Info Grid */}
-                  <div className="flex items-center justify-between mb-8">
-                    {/* Left: Producer Info */}
-                    <div className="flex flex-col justify-center space-y-6">
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold tracking-[0.25em] uppercase mb-4">Presented By</p>
-                        <div className="flex items-center space-x-4">
-                           <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-900 border border-slate-100">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
-                              </svg>
-                           </div>
-                           <div>
-                              <p className="text-slate-900 font-bold text-xl tracking-tight">信息科技学院</p>
-                              <p className="text-slate-400 text-xs font-medium mt-1 tracking-widest uppercase">分团委出品</p>
-                           </div>
+                  {/* Left: School Identity & Contact */}
+                  <div className="flex flex-col justify-center py-1 pr-6 border-r border-slate-100 flex-1">
+                    <div className="space-y-6">
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-3 text-slate-600">
+                          <svg className="w-5 h-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          <p className="text-base font-bold tracking-wide leading-tight">太原市万柏林区千峰南路25号</p>
+                        </div>
+                        <div className="flex flex-col space-y-4">
+                          <div className="flex items-center space-x-3 text-slate-600">
+                            <svg className="w-5 h-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            <p className="text-base font-bold tracking-wide">030024</p>
+                          </div>
+                          <div className="flex items-center space-x-3 text-slate-600">
+                            <svg className="w-5 h-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            <p className="text-base font-bold tracking-wide">0351-6580599</p>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div>
+
+                      <div className="pt-2">
                         <div className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <p className="text-slate-600 font-mono text-xs font-bold">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                          <p className="text-slate-500 font-mono text-xs font-bold uppercase tracking-widest">
                             {window.location.hostname}
                           </p>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Right: QR Code */}
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-blue-600/5 blur-2xl rounded-full"></div>
-                      <div className="relative bg-white p-3 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50">
+                  {/* Right: Main QR Entry */}
+                  <div className="flex flex-col items-center justify-center pl-10 shrink-0">
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-blue-600/10 blur-3xl rounded-full group-hover:bg-blue-600/20 transition-all"></div>
+                      <div className="relative bg-white p-3 rounded-[1.5rem] border border-slate-100 shadow-2xl">
                         <QRCodeCanvas 
                           value={shareCardData.url}
                           size={120}
                           level="H"
                           includeMargin={true}
-                          fgColor="#1e293b"
+                          fgColor="#0f172a"
                         />
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-lg">
-                          扫码体验全景
-                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Bottom Section: WeChat Banner - Integrated */}
-                  <div className="mt-auto pt-6 border-t border-slate-100">
-                    <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between group">
-                      <div className="flex flex-col">
-                        <p className="text-slate-900 font-bold text-sm mb-1">更多精彩校园风光</p>
-                        <p className="text-slate-400 text-xs">请在微信搜索关注</p>
-                      </div>
-                      <div className="h-10 w-px bg-slate-200 mx-4"></div>
-                      <div className="flex-1 max-w-[240px]">
-                         <img 
-                            src={`${baseUrl}/扫码_搜索联合传播样式-白色版.png`} 
-                            className="w-full h-auto block mix-blend-darken opacity-90 grayscale-[20%] group-hover:grayscale-0 transition-all duration-500" 
-                            alt="WeChat Banner" 
-                          />
-                      </div>
+                    <div className="mt-6 px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black tracking-[0.2em] rounded-full shadow-lg shadow-blue-200 uppercase">
+                      扫码游览
                     </div>
                   </div>
+                </div>
+              </div>
 
+              {/* 3. Footer - Minimalist & Integrated */}
+              <div className="mt-auto px-10 py-12">
+                <div className="flex items-center justify-between transition-all duration-700">
+                  <div className="flex flex-col">
+                    <p className="text-slate-900 font-black text-lg tracking-tight">更多资讯</p>
+                    <p className="text-slate-400 text-xs font-bold mt-1">关注出品方更多动态</p>
+                  </div>
+                  <div className="flex items-center space-x-8">
+                    <div className="h-10 w-px bg-slate-200"></div>
+                    <div className="max-w-[340px]">
+                      <img 
+                        src={`${baseUrl}/扫码_搜索联合传播样式-白色版.png`} 
+                        className="w-full h-auto block" 
+                        alt="WeChat Banner" 
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
