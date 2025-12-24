@@ -35,8 +35,8 @@
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/<您的用户名>/sxcz-virtual-tour.git
-   cd sxcz-virtual-tour
+   git clone https://github.com/AmaTsumeAkira/sxcz-virtual-tour-React.git
+   cd sxcz-virtual-tour-React
    ```
 
 2. **安装依赖**
