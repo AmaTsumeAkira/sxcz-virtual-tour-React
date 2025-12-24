@@ -161,8 +161,11 @@ function App() {
             )}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-white/5 text-[10px] text-white/20 text-center uppercase tracking-[0.2em]">
-            © 2025 山西财专 · 云上游校园
+          <div className="mt-6 pt-6 border-t border-white/5 text-[10px] text-white/20 text-center uppercase tracking-[0.2em] space-y-1">
+            <p>© 2025 山西财专 · 云上游校园</p>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors block">
+              陕ICP备20011108号-1
+            </a>
           </div>
         </div>
       </div>
@@ -191,6 +194,11 @@ function App() {
             >
               开启云端之旅
             </button>
+            <div className="mt-6">
+              <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-white/20 hover:text-white/40 transition-colors">
+                陕ICP备20011108号-1
+              </a>
+            </div>
           </div>
         </div>
       )}
@@ -267,6 +275,13 @@ function App() {
         </div>
       </div>
 
+      {/* ICP Filing */}
+      <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[100] text-[9px] md:text-[10px] text-white/10 pointer-events-auto">
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/30 transition-colors">
+          陕ICP备20011108号-1
+        </a>
+      </div>
+
       {/* Info Modal */}
       {isInfoOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-xl transition-all duration-500">
@@ -321,6 +336,12 @@ function App() {
                 </p>
                 <p className="flex justify-between"><span>核心引擎</span> <span className="text-white/60">Marzipano Engine</span></p>
                 <p className="flex justify-between"><span>版权所有</span> <span className="text-white/60">© 2025 All Rights Reserved</span></p>
+                <p className="flex justify-between">
+                  <span>备案信息</span> 
+                  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
+                    陕ICP备20011108号-1
+                  </a>
+                </p>
               </div>
 
               <a 
