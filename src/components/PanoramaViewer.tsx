@@ -6,14 +6,25 @@ interface PanoramaViewerProps {
   currentSceneId: string;
   onSceneChange: (sceneId: string) => void;
   isAutorotateEnabled: boolean;
+  isGyroEnabled: boolean;
+  onInfoHotspotClick: (title: string, text: string) => void;
+  onLoadingChange: (isLoading: boolean) => void;
 }
 
-const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onSceneChange, isAutorotateEnabled }) => {
+const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ 
+  currentSceneId, 
+  onSceneChange, 
+  isAutorotateEnabled,
+  isGyroEnabled,
+  onInfoHotspotClick,
+  onLoadingChange
+}) => {
   const viewerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scenesRef = useRef<Record<string, any>>({});
   const autorotateRef = useRef<any>(null);
   const onSceneChangeRef = useRef(onSceneChange);
+  const deviceOrientationControlMethodRef = useRef<any>(null);
 
   useEffect(() => {
     onSceneChangeRef.current = onSceneChange;
@@ -23,8 +34,10 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
     if (!containerRef.current || viewerRef.current) return;
 
     const Marzipano = (window as any).Marzipano;
+    const DeviceOrientationControlMethod = (window as any).DeviceOrientationControlMethod;
+    
     if (!Marzipano) {
-      console.error('Marzipano library not found. Please ensure it is loaded in index.html');
+      console.error('Marzipano library not found.');
       return;
     }
 
@@ -35,6 +48,17 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
     const viewer = new Marzipano.Viewer(containerRef.current, viewerOpts);
     viewerRef.current = viewer;
 
+    // Initialize Gyroscope if available
+    if (DeviceOrientationControlMethod) {
+      try {
+        deviceOrientationControlMethodRef.current = new DeviceOrientationControlMethod();
+        const controls = viewer.controls();
+        controls.registerMethod('deviceOrientation', deviceOrientationControlMethodRef.current);
+      } catch (err) {
+        console.warn('Gyroscope not supported or permission denied:', err);
+      }
+    }
+
     // Initialize autorotate
     autorotateRef.current = Marzipano.autorotate({
       yawSpeed: 0.03,
@@ -43,7 +67,6 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
     });
 
     // Initialize all scenes
-    console.log('Initializing scenes and hotspots...');
     const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
     APP_DATA.scenes.forEach((sceneData: Scene) => {
       const source = Marzipano.ImageUrlSource.fromString(
@@ -68,52 +91,34 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
 
       // Create link hotspots
       sceneData.linkHotspots.forEach(hotspot => {
-        console.log(`Creating link hotspot for scene ${sceneData.id} -> ${hotspot.target}`);
         const element = document.createElement('div');
-        element.className = 'link-hotspot animate-pulse-slow cursor-pointer';
+        element.className = 'link-hotspot cursor-pointer group';
         
         const img = document.createElement('img');
+        img.className = 'animate-pulse-slow';
         img.src = `${baseUrl}/img/link.png`;
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.display = 'block';
-        img.style.transition = 'transform 0.3s';
+        img.style.setProperty('--hotspot-rotate', `${hotspot.rotation}rad`);
         img.style.transform = `rotate(${hotspot.rotation}rad)`;
-        img.onerror = () => console.error('Failed to load hotspot image: /img/link.png');
         
         const tooltip = document.createElement('div');
-        tooltip.style.position = 'absolute';
-        tooltip.style.bottom = '100%';
-        tooltip.style.left = '50%';
-        tooltip.style.transform = 'translateX(-50%)';
-        tooltip.style.marginBottom = '8px';
-        tooltip.style.padding = '4px 12px';
-        tooltip.style.backgroundColor = 'rgba(0,0,0,0.8)';
-        tooltip.style.color = 'white';
-        tooltip.style.fontSize = '12px';
-        tooltip.style.borderRadius = '4px';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.display = 'none'; // 默认隐藏
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.zIndex = '1001';
+        tooltip.className = 'absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-black/80 backdrop-blur-md text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-white/10 shadow-xl';
         
         const targetScene = APP_DATA.scenes.find(s => s.id === hotspot.target);
-        tooltip.innerText = targetScene ? targetScene.name : '';
+        tooltip.innerText = targetScene ? `前往：${targetScene.name}` : '';
 
         element.appendChild(img);
         element.appendChild(tooltip);
         
-        element.onmouseenter = () => { tooltip.style.display = 'block'; };
-        element.onmouseleave = () => { tooltip.style.display = 'none'; };
-        
         element.onclick = () => {
-          console.log('Switching to scene:', hotspot.target);
           onSceneChangeRef.current(hotspot.target);
         };
         
-        // Prevent event propagation
+        // Add passive: true to resolve browser violations where preventDefault is not needed
         ['touchstart', 'touchmove', 'touchend', 'touchcancel', 'wheel', 'mousewheel'].forEach(event => {
-          element.addEventListener(event, e => e.stopPropagation());
+          element.addEventListener(event, e => e.stopPropagation(), { passive: true });
         });
         
         scene.hotspotContainer().createHotspot(element, { yaw: hotspot.yaw, pitch: hotspot.pitch });
@@ -121,26 +126,30 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
 
       // Create info hotspots
       sceneData.infoHotspots.forEach(hotspot => {
-        console.log(`Creating info hotspot for scene ${sceneData.id}: ${hotspot.title}`);
         const element = document.createElement('div');
-        element.className = 'info-hotspot animate-pulse-slow cursor-pointer';
+        element.className = 'info-hotspot cursor-pointer group';
         
         const img = document.createElement('img');
+        img.className = 'animate-pulse-slow';
         img.src = `${baseUrl}/img/info.png`;
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.display = 'block';
-        img.onerror = () => console.error(`Failed to load hotspot image: ${baseUrl}/img/info.png`);
         
+        const tooltip = document.createElement('div');
+        tooltip.className = 'absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-blue-600/90 backdrop-blur-md text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-white/20 shadow-xl';
+        tooltip.innerText = hotspot.title;
+
         element.appendChild(img);
+        element.appendChild(tooltip);
         
         element.onclick = () => {
-            alert(`${hotspot.title}: ${hotspot.text}`);
+          onInfoHotspotClick(hotspot.title, hotspot.text);
         };
 
-        // Prevent event propagation
+        // Add passive: true to resolve browser violations where preventDefault is not needed
         ['touchstart', 'touchmove', 'touchend', 'touchcancel', 'wheel', 'mousewheel'].forEach(event => {
-          element.addEventListener(event, e => e.stopPropagation());
+          element.addEventListener(event, e => e.stopPropagation(), { passive: true });
         });
         
         scene.hotspotContainer().createHotspot(element, { yaw: hotspot.yaw, pitch: hotspot.pitch });
@@ -149,9 +158,11 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
       scenesRef.current[sceneData.id] = scene;
     });
 
-    // Switch to initial scene
-    if (scenesRef.current[currentSceneId]) {
-      scenesRef.current[currentSceneId].switchTo();
+    // Switch to initial scene immediately after initialization
+    const initialScene = scenesRef.current[currentSceneId];
+    if (initialScene) {
+      console.log('Switching to initial scene:', currentSceneId);
+      initialScene.switchTo({ transitionDuration: 1 });
     }
 
     return () => {
@@ -160,13 +171,23 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
         viewerRef.current = null;
       }
     };
-  }, []);
+  }, [onInfoHotspotClick]); // Removed currentSceneId from here to avoid re-init
 
   useEffect(() => {
-    if (viewerRef.current && scenesRef.current[currentSceneId]) {
-      scenesRef.current[currentSceneId].switchTo();
+    const scene = scenesRef.current[currentSceneId];
+    if (scene && viewerRef.current) {
+      // Check if it's already the current scene to avoid redundant transitions
+      if (viewerRef.current.scene() === scene) return;
+
+      onLoadingChange(true);
+      console.log('Switching scene to:', currentSceneId);
+      
+      // Use transitionDuration: 0 to ensure instant swap
+      scene.switchTo({ transitionDuration: 0 }, () => {
+        onLoadingChange(false);
+      });
     }
-  }, [currentSceneId]);
+  }, [currentSceneId, onLoadingChange]);
 
   useEffect(() => {
     if (viewerRef.current && autorotateRef.current) {
@@ -179,6 +200,34 @@ const PanoramaViewer: React.FC<PanoramaViewerProps> = ({ currentSceneId, onScene
       }
     }
   }, [isAutorotateEnabled]);
+
+  useEffect(() => {
+    if (viewerRef.current && deviceOrientationControlMethodRef.current) {
+      const controls = viewerRef.current.controls();
+      if (isGyroEnabled) {
+        // Modern browsers (iOS 13+) require permission request
+        const requestPermission = (DeviceOrientationEvent as any).requestPermission;
+        if (typeof requestPermission === 'function') {
+          requestPermission()
+            .then((response: string) => {
+              if (response === 'granted') {
+                controls.enableMethod('deviceOrientation');
+              } else {
+                console.warn('Gyroscope permission denied');
+              }
+            })
+            .catch((err: any) => {
+              console.error('Gyroscope permission error:', err);
+            });
+        } else {
+          // Older browsers or non-iOS
+          controls.enableMethod('deviceOrientation');
+        }
+      } else {
+        controls.disableMethod('deviceOrientation');
+      }
+    }
+  }, [isGyroEnabled]);
 
   return (
     <div ref={containerRef} className="w-full h-full absolute inset-0" />
