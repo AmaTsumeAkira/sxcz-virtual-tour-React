@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toJpeg } from 'html-to-image';
 import PanoramaViewer from './components/PanoramaViewer';
+import MapOverlay from './components/MapOverlay';
 import { APP_DATA } from './data';
 
 function App() {
@@ -36,6 +37,8 @@ function App() {
   const [isGyroEnabled, setIsGyroEnabled] = useState(false);
   const [infoHotspotData, setInfoHotspotData] = useState<{title: string, text: string} | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [shareCardData, setShareCardData] = useState<{
     screenshot: string;
@@ -45,11 +48,39 @@ function App() {
   const [finalShareImage, setFinalShareImage] = useState<string | null>(null);
   const [isGeneratingCard, setIsGeneratingCard] = useState(false);
   const [isNarrationPlaying, setIsNarrationPlaying] = useState(false);
+  const [scenesData, setScenesData] = useState(APP_DATA.scenes);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const narrationRef = useRef<HTMLAudioElement>(null);
   const viewerRef = useRef<any>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
+
+  // Admin Mode Global Functions
+  useEffect(() => {
+    (window as any).admin = () => {
+      setIsAdminMode(prev => {
+        const newMode = !prev;
+        console.log(`Admin Mode: ${newMode ? 'ENABLED' : 'DISABLED'}`);
+        if (newMode) setIsMapOpen(true);
+        return newMode;
+      });
+    };
+
+    (window as any).map = () => {
+      const output = scenesData.map(s => ({
+        id: s.id,
+        name: s.name,
+        mapPos: s.mapPos
+      }));
+      console.table(output);
+      console.log(JSON.stringify(output, null, 2));
+    };
+
+    return () => {
+      delete (window as any).admin;
+      delete (window as any).map;
+    };
+  }, [scenesData]);
 
   const handleSceneChange = useCallback((id: string) => {
     setCurrentSceneId(id);
@@ -222,6 +253,20 @@ function App() {
         isGyroEnabled={isGyroEnabled}
         onInfoHotspotClick={handleInfoHotspotClick}
         initialView={initialView}
+      />
+
+      {/* Map Overlay */}
+      <MapOverlay 
+        currentSceneId={currentSceneId}
+        onSceneChange={handleSceneChange}
+        baseUrl={baseUrl}
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        isAdmin={isAdminMode}
+        scenes={scenesData}
+        onUpdateScene={(id, pos) => {
+          setScenesData(prev => prev.map(s => s.id === id ? { ...s, mapPos: pos } : s));
+        }}
       />
 
       {/* Top Title Bar */}
@@ -436,6 +481,21 @@ function App() {
           >
             <img src={`${baseUrl}/img/info.png`} className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100 transition-opacity" alt="Help" />
             <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">帮助</span>
+          </button>
+
+          <button 
+            onClick={() => setIsMapOpen(true)}
+            className={`p-2 md:p-3 rounded-xl md:rounded-2xl transition-all duration-500 group relative shrink-0 flex flex-col items-center space-y-1 ${isMapOpen ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'hover:bg-white/10 text-white/60'}`}
+            title="校园地图"
+          >
+            <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 md:w-5 md:h-5">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                <line x1="8" y1="2" x2="8" y2="18" />
+                <line x1="16" y1="6" x2="16" y2="22" />
+              </svg>
+            </div>
+            <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">地图</span>
           </button>
 
           <button 

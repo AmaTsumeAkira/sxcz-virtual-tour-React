@@ -33,6 +33,7 @@ export interface Scene {
   linkHotspots: LinkHotspot[];
   infoHotspots: InfoHotspot[];
   audio?: string; // 场景讲解语音文件路径
+  mapPos?: { x: number; y: number }; // [新增] 场景在地图上的百分比坐标 (0-100)
 }
 
 export interface AppData {
@@ -52,6 +53,7 @@ export const APP_DATA: AppData = {
       "id": "0-",
       "name": "云游财专-南院东门",
       "audio": "audio/南校东门门口介绍.mp3",
+      "mapPos": { "x": 90.57, "y": 35.22 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -76,6 +78,7 @@ export const APP_DATA: AppData = {
     {
       "id": "1-",
       "name": "云游财专-南院南门",
+      "mapPos": { "x": 69.8, "y": 67.53 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -100,6 +103,7 @@ export const APP_DATA: AppData = {
     {
       "id": "2-",
       "name": "云游财专-东西道路",
+      "mapPos": { "x": 81.23, "y": 35.53 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -121,6 +125,7 @@ export const APP_DATA: AppData = {
     {
       "id": "3-",
       "name": "云游财专-南门十字路口",
+      "mapPos": { "x": 70.4, "y": 47.61 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -144,6 +149,7 @@ export const APP_DATA: AppData = {
     {
       "id": "4-",
       "name": "云游财专-东门十字路口",
+      "mapPos": { "x": 71.73, "y": 35.7 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -165,6 +171,7 @@ export const APP_DATA: AppData = {
     {
       "id": "5-",
       "name": "云游财专-青年广场",
+      "mapPos": { "x": 62.68, "y": 24.99 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -188,6 +195,7 @@ export const APP_DATA: AppData = {
     {
       "id": "6-",
       "name": "云游财专-办公楼平台",
+      "mapPos": { "x": 64.91, "y": 57.31 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -208,6 +216,7 @@ export const APP_DATA: AppData = {
     {
       "id": "7-",
       "name": "云游财专-操场（篮球场）",
+      "mapPos": { "x": 35.69, "y": 45.14 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -226,6 +235,7 @@ export const APP_DATA: AppData = {
     {
       "id": "8-",
       "name": "云游财专-礼堂中层楼梯",
+      "mapPos": { "x": 43.4, "y": 24.57 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -247,6 +257,7 @@ export const APP_DATA: AppData = {
       "id": "9-",
       "name": "云游财专-数智技术服务港",
       "audio": "audio/数智技术服务岗.mp3",
+      "mapPos": { "x": 48.74, "y": 16.23 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -265,6 +276,7 @@ export const APP_DATA: AppData = {
       "id": "10-",
       "name": "云游财专-双创中心",
       "audio": "audio/双创.mp3",
+      "mapPos": { "x": 64.17, "y": 49.17 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -283,6 +295,7 @@ export const APP_DATA: AppData = {
     {
       "id": "11-2",
       "name": "云游财专-2号教学楼大厅",
+      "mapPos": { "x": 63.57, "y": 14.84 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -301,6 +314,7 @@ export const APP_DATA: AppData = {
     {
       "id": "12-",
       "name": "云游财专-一站式学生服务社区（学工处）",
+      "mapPos": { "x": 54.82, "y": 36.2 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -319,6 +333,7 @@ export const APP_DATA: AppData = {
     {
       "id": "13-",
       "name": "云游财专-南院食堂",
+      "mapPos": { "x": 34.65, "y": 24.69 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -337,6 +352,7 @@ export const APP_DATA: AppData = {
     {
       "id": "14-",
       "name": "云游财专-东门池塘（小树林）",
+      "mapPos": { "x": 75.74, "y": 30.86 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -355,6 +371,7 @@ export const APP_DATA: AppData = {
     {
       "id": "15-",
       "name": "云游财专-南门树林",
+      "mapPos": { "x": 82.56, "y": 63.06 },
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
