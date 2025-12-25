@@ -27,6 +27,7 @@ function App() {
 
   const initialState = getInitialState();
   const [currentSceneId, setCurrentSceneId] = useState(initialState.sceneId);
+  const currentScene = APP_DATA.scenes.find(s => s.id === currentSceneId) || APP_DATA.scenes[0];
   const [initialView] = useState(initialState.view);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(!initialState.view); // Skip welcome if shared link
@@ -43,8 +44,10 @@ function App() {
   } | null>(null);
   const [finalShareImage, setFinalShareImage] = useState<string | null>(null);
   const [isGeneratingCard, setIsGeneratingCard] = useState(false);
+  const [isNarrationPlaying, setIsNarrationPlaying] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
+  const narrationRef = useRef<HTMLAudioElement>(null);
   const viewerRef = useRef<any>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +58,60 @@ function App() {
   const handleInfoHotspotClick = useCallback((title: string, text: string) => {
     setInfoHotspotData({ title, text });
   }, []);
+
+  // Handle narration when scene changes
+  useEffect(() => {
+    if (!isWelcomeOpen && currentScene.audio && narrationRef.current) {
+      narrationRef.current.src = `${baseUrl}/${currentScene.audio}`;
+      narrationRef.current.play()
+        .then(() => setIsNarrationPlaying(true))
+        .catch(err => {
+          console.log("Narration play failed:", err);
+          setIsNarrationPlaying(false);
+        });
+      
+      // Stop background music when narration starts
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    } else if (narrationRef.current) {
+      narrationRef.current.pause();
+      setIsNarrationPlaying(false);
+      // Resume background music if narration is stopped/not present
+      if (!isWelcomeOpen && audioRef.current) {
+        audioRef.current.play().catch(err => console.log("Audio resume failed:", err));
+      }
+    }
+  }, [currentSceneId, isWelcomeOpen, baseUrl, currentScene.audio]);
+
+  // Resume background music when narration ends
+  const handleNarrationEnded = () => {
+    setIsNarrationPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.play().catch(err => console.log("Audio resume failed:", err));
+    }
+  };
+
+  const toggleNarration = () => {
+    if (narrationRef.current) {
+      if (isNarrationPlaying) {
+        narrationRef.current.pause();
+        setIsNarrationPlaying(false);
+        // Resume background music when manually pausing narration
+        if (audioRef.current) {
+          audioRef.current.play().catch(err => console.log("Audio resume failed:", err));
+        }
+      } else {
+        narrationRef.current.play()
+          .then(() => setIsNarrationPlaying(true))
+          .catch(err => console.log("Narration play failed:", err));
+        // Pause background music when manually playing narration
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+      }
+    }
+  };
 
   const handleShare = () => {
     if (viewerRef.current) {
@@ -120,8 +177,6 @@ function App() {
     }
   }, [shareCardData, isGeneratingCard]);
 
-  const currentScene = APP_DATA.scenes.find(s => s.id === currentSceneId) || APP_DATA.scenes[0];
-
   const filteredScenes = APP_DATA.scenes.filter(scene => 
     scene.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -135,8 +190,11 @@ function App() {
   const toggleMute = () => {
     if (audioRef.current) {
       audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
     }
+    if (narrationRef.current) {
+      narrationRef.current.muted = !isMuted;
+    }
+    setIsMuted(!isMuted);
   };
 
   const toggleInfo = () => {
@@ -397,6 +455,40 @@ function App() {
         </div>
       </div>
 
+      {/* Narration Control (Desktop Only) */}
+      {currentScene.audio && !isWelcomeOpen && (
+        <div className="absolute bottom-10 left-10 z-50 hidden md:block">
+          <div className="bg-glass-dark p-4 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-2xl flex items-center space-x-4 animate-fade-in">
+            <button 
+              onClick={toggleNarration}
+              className="w-12 h-12 rounded-2xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+            >
+              {isNarrationPlaying ? (
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white ml-1">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              )}
+            </button>
+            <div className="flex flex-col pr-2">
+              <span className="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-0.5">正在播放</span>
+              <span className="text-sm font-bold text-white/90">场景语音解说</span>
+            </div>
+            {isNarrationPlaying && (
+              <div className="flex items-end space-x-1 h-4 pb-1">
+                <div className="w-1 bg-blue-400 animate-music-bar-1 rounded-full"></div>
+                <div className="w-1 bg-blue-400 animate-music-bar-2 rounded-full"></div>
+                <div className="w-1 bg-blue-400 animate-music-bar-3 rounded-full"></div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ICP Filing */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-[9px] md:text-[10px] text-white/20 pointer-events-auto whitespace-nowrap">
         <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">
@@ -518,6 +610,7 @@ function App() {
       )}
 
       <audio ref={audioRef} src={`${baseUrl}/sxcz.mp3`} loop />
+      <audio ref={narrationRef} onEnded={handleNarrationEnded} />
 
       {/* Share Card Modal */}
       {shareCardData && (

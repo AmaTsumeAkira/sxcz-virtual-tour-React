@@ -32,6 +32,7 @@ export interface Scene {
   initialViewParameters: ViewParameters;
   linkHotspots: LinkHotspot[];
   infoHotspots: InfoHotspot[];
+  audio?: string; // 场景讲解语音文件路径
 }
 
 export interface AppData {
@@ -50,6 +51,7 @@ export const APP_DATA: AppData = {
     {
       "id": "0-",
       "name": "云游财专-南院东门",
+      "audio": "audio/南校东门门口介绍.mp3",
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -67,7 +69,7 @@ export const APP_DATA: AppData = {
           "yaw": 0.7512953754929903,
           "pitch": -0.1303135796336008,
           "title": "山西省财政税务专科学校",
-          "text": "首批国家示范性高等职业院校<div>国家优质专科高等职业院校</div><div>山西唯一中国特色高水平高职学校建设单位</div><div>取得国家级标志性成果300余项</div><div>长期稳居全国职业教育第一方阵。</div>"
+          "text": "首批国家示范性高等职业院校，国家优质专科高等职业院校，山西唯一中国特色高水平高职学校建设单位，取得国家级标志性成果300余项，长期稳居全国职业教育第一方阵。"
         }
       ]
     },
@@ -244,6 +246,7 @@ export const APP_DATA: AppData = {
     {
       "id": "9-",
       "name": "云游财专-数智技术服务港",
+      "audio": "audio/数智技术服务岗.mp3",
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
@@ -261,6 +264,7 @@ export const APP_DATA: AppData = {
     {
       "id": "10-",
       "name": "云游财专-双创中心",
+      "audio": "audio/双创.mp3",
       "levels": [
         { "tileSize": 256, "size": 256, "fallbackOnly": true },
         { "tileSize": 512, "size": 512 },
