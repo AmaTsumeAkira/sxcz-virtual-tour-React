@@ -158,7 +158,7 @@ function App() {
         url.searchParams.set('pitch', view.pitch.toFixed(4));
         url.searchParams.set('fov', view.fov.toFixed(4));
         
-        const sceneName = APP_DATA.scenes.find(s => s.id === view.sceneId)?.name || '全景校园';
+        const sceneName = (APP_DATA.scenes.find(s => s.id === view.sceneId)?.name || '全景校园').replace('云游财专-', '');
         
         setFinalShareImage(null);
         setShareCardData({
@@ -449,7 +449,13 @@ function App() {
             <span className="text-[9px] md:text-[10px] font-bold tracking-tighter opacity-80">旋转</span>
           </button>
           <button 
-            onClick={() => setIsGyroEnabled(!isGyroEnabled)}
+            onClick={() => {
+              const newGyroState = !isGyroEnabled;
+              setIsGyroEnabled(newGyroState);
+              if (newGyroState) {
+                setIsAutorotateEnabled(false);
+              }
+            }}
             className={`p-2 md:p-3 rounded-xl md:rounded-2xl transition-all duration-500 group relative shrink-0 flex flex-col items-center space-y-1 ${isGyroEnabled ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40' : 'hover:bg-white/10 text-white/60'}`}
             title="陀螺仪"
           >
@@ -578,99 +584,251 @@ function App() {
       {/* Info Modal */}
       {isInfoOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-xl transition-all duration-500 p-4">
-          <div className="bg-glass p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] border border-white/20 shadow-2xl max-w-md w-full relative animate-float max-h-[90dvh] overflow-y-auto no-scrollbar">
+          <div className="bg-glass rounded-[2rem] md:rounded-[3rem] border border-white/20 shadow-2xl max-w-4xl w-full relative animate-float max-h-[90dvh] overflow-y-auto no-scrollbar">
             <button 
               onClick={() => setIsInfoOpen(false)}
-              className="absolute top-4 right-4 md:top-6 md:right-6 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/50 hover:text-white z-10"
+              className="absolute top-4 right-4 md:top-8 md:right-8 w-8 h-8 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/50 hover:text-white z-10"
             >
               ✕
             </button>
-            <h3 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">操作指南</h3>
-            <div className="space-y-5 md:space-y-6 text-white/70 leading-relaxed font-medium">
-              <div className="flex items-start space-x-4 group">
-                <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all">
-                  <span className="text-xs font-bold">1</span>
+
+            {/* Desktop Layout */}
+            <div className="hidden md:flex p-12 space-x-12">
+              {/* Left Column: Guide */}
+              <div className="flex-1 space-y-8">
+                <h3 className="text-4xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">操作指南</h3>
+                <div className="space-y-8 text-white/70 leading-relaxed font-medium">
+                  <div className="flex items-start space-x-5 group">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-2xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0">
+                      <span className="text-sm font-bold">1</span>
+                    </div>
+                    <p className="text-lg">拖动屏幕可旋转视角，探索校园美景。</p>
+                  </div>
+                  <div className="flex items-start space-x-5 group">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-2xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0">
+                      <span className="text-sm font-bold">2</span>
+                    </div>
+                    <p className="text-lg">点击蓝色闪烁的“前进”图标，可跳转至下一个场景。</p>
+                  </div>
+                  <div className="flex items-start space-x-5 group">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-2xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0">
+                      <span className="text-sm font-bold">3</span>
+                    </div>
+                    <p className="text-lg">点击左上角菜单，可快速切换至不同校区场景。</p>
+                  </div>
                 </div>
-                <p className="flex-1 text-sm">拖动屏幕可旋转视角，探索校园美景。</p>
+
+                <div className="pt-8 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-xs uppercase tracking-[0.2em] text-white/30 font-bold">访问统计</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                      <p className="text-[10px] text-white/30 uppercase mb-1">总访问量</p>
+                      <p className="text-xl font-black text-blue-400">{sitePv || '...'}</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                      <p className="text-[10px] text-white/30 uppercase mb-1">本页阅读</p>
+                      <p className="text-xl font-black text-purple-400">{pagePv || '...'}</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                      <p className="text-[10px] text-white/30 uppercase mb-1">访客人数</p>
+                      <p className="text-xl font-black text-emerald-400">{siteUv || '...'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/10">
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                        <span className="text-xs uppercase tracking-[0.2em] text-white/30 font-bold">出品单位</span>
+                      </div>
+                      <p className="text-sm text-white/60 leading-relaxed font-medium">
+                        山西省财政税务专科学校<br/>信息科技学院分团委
+                      </p>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                          <span className="text-xs uppercase tracking-[0.2em] text-white/30 font-bold">核心技术</span>
+                        </div>
+                        <p className="text-sm text-white/60 font-medium">Marzipano Engine</p>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
+                          <span className="text-xs uppercase tracking-[0.2em] text-white/30 font-bold">备案信息</span>
+                        </div>
+                        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-blue-400 transition-colors font-medium block">
+                          陕ICP备20011108号-1
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-start space-x-4 group">
-                <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all">
-                  <span className="text-xs font-bold">2</span>
+
+              {/* Right Column: Info & QRs */}
+              <div className="w-80 space-y-6">
+                <div className="bg-white/5 rounded-[2rem] p-6 border border-white/10">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">关注我们</span>
+                    <span className="px-2 py-1 bg-blue-500/10 rounded text-[10px] text-blue-400 border border-blue-500/20">v2.0.0</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="bg-white p-1.5 rounded-xl shadow-xl w-full aspect-square flex items-center justify-center">
+                        <img src={`${baseUrl}/学校微信公众号二维码.jpg`} className="w-full h-auto rounded-lg" alt="微信公众号" />
+                      </div>
+                      <span className="text-[10px] text-white/40 font-bold">微信公众号</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="bg-white p-1.5 rounded-xl shadow-xl w-full aspect-square flex items-center justify-center">
+                        <img src={`${baseUrl}/学校微信视频号二维码.jpg`} className="w-full h-auto rounded-lg" alt="微信视频号" />
+                      </div>
+                      <span className="text-[10px] text-white/40 font-bold">微信视频号</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="bg-white p-1.5 rounded-xl shadow-xl w-full aspect-square flex items-center justify-center">
+                        <img src={`${baseUrl}/学校微博二维码.jpg`} className="w-full h-auto rounded-lg" alt="官方微博" />
+                      </div>
+                      <span className="text-[10px] text-white/40 font-bold">官方微博</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className="bg-white p-1.5 rounded-xl shadow-xl w-full aspect-square flex items-center justify-center">
+                        <img src={`${baseUrl}/学校抖音二维码.jpg`} className="w-full h-auto rounded-lg" alt="官方抖音" />
+                      </div>
+                      <span className="text-[10px] text-white/40 font-bold">官方抖音</span>
+                    </div>
+                  </div>
+
+                  {/* WeChat QR Banner */}
+                  <div className="mb-6 rounded-2xl overflow-hidden border border-white/10 bg-white/5 p-1">
+                    <img 
+                      src={`${baseUrl}/扫码_搜索联合传播样式-标准色版.png`} 
+                      className="w-full h-auto rounded-xl" 
+                      alt="信息科技学院微信二维码" 
+                    />
+                  </div>
                 </div>
-                <p className="flex-1 text-sm">点击蓝色闪烁的“前进”图标，可跳转至下一个场景。</p>
-              </div>
-              <div className="flex items-start space-x-4 group">
-                <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-all">
-                  <span className="text-xs font-bold">3</span>
+
+                <div className="flex flex-col space-y-3">
+                  <a 
+                    href="https://www.sxftc.edu.cn/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center space-x-2 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl text-white text-sm font-bold transition-all shadow-lg shadow-blue-600/20"
+                  >
+                    <span>访问官网</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                  <button 
+                    onClick={() => setIsInfoOpen(false)}
+                    className="py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-sm transition-all border border-white/10"
+                  >
+                    我知道了
+                  </button>
                 </div>
-                <p className="flex-1 text-sm">点击左上角菜单，可快速切换至不同校区场景。</p>
               </div>
             </div>
 
-            <div className="mt-10 pt-8 border-t border-white/10">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Project Info</span>
-                <span className="px-2 py-1 bg-blue-500/10 rounded text-[10px] text-blue-400 border border-blue-500/20">v2.0.0-React</span>
-              </div>
-              
-              {/* WeChat QR Banner */}
-              <div className="mb-6 rounded-2xl overflow-hidden border border-white/10 shadow-inner bg-white/5 p-1">
-                <img 
-                  src={`${baseUrl}/扫码_搜索联合传播样式-标准色版.png`} 
-                  className="w-full h-auto rounded-xl" 
-                  alt="信息科技学院微信二维码" 
-                />
-              </div>
-
-              <div className="space-y-2 text-xs text-white/40 font-medium">
-                <p className="flex justify-between items-start">
-                  <span className="shrink-0">出品单位</span> 
-                  <span className="text-white/60 text-right ml-4">山西省财政税务专科学校<br/>信息科技学院分团委</span>
-                </p>
-                <p className="flex justify-between"><span>核心引擎</span> <span className="text-white/60">Marzipano Engine</span></p>
-                <p className="flex justify-between"><span>版权所有</span> <span className="text-white/60">© 2025 All Rights Reserved</span></p>
-                <p className="flex justify-between">
-                  <span>备案信息</span> 
-                  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
-                    陕ICP备20011108号-1
-                  </a>
-                </p>
-                <div className="pt-4 mt-4 border-t border-white/5 grid grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <p className="text-[10px] text-white/30 mb-1">总访问量</p>
-                    <p className="text-sm font-bold text-blue-400">{sitePv || '...'}</p>
+            {/* Mobile Layout */}
+            <div className="md:hidden p-6">
+              <h3 className="text-2xl font-black mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">操作指南</h3>
+              <div className="space-y-5 text-white/70 leading-relaxed font-medium mb-8">
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 shrink-0">
+                    <span className="text-xs font-bold">1</span>
                   </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-white/30 mb-1">本页阅读</p>
-                    <p className="text-sm font-bold text-purple-400">{pagePv || '...'}</p>
+                  <p className="text-sm">拖动屏幕可旋转视角，探索校园美景。</p>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 shrink-0">
+                    <span className="text-xs font-bold">2</span>
                   </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-white/30 mb-1">访客人数</p>
-                    <p className="text-sm font-bold text-emerald-400">{siteUv || '...'}</p>
+                  <p className="text-sm">点击蓝色闪烁的“前进”图标，可跳转至下一个场景。</p>
+                </div>
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-xl flex items-center justify-center mt-1 border border-blue-500/30 shrink-0">
+                    <span className="text-xs font-bold">3</span>
                   </div>
+                  <p className="text-sm">点击左上角菜单，可快速切换至不同校区场景。</p>
                 </div>
               </div>
 
-              <div className="mt-8 flex items-center space-x-3">
-                <a 
-                  href="https://www.sxftc.edu.cn/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center space-x-2 py-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-2xl text-blue-400 text-xs font-bold transition-all group"
-                >
-                  <span>访问官网</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform">
-                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                </a>
-                <button 
-                  onClick={() => setIsInfoOpen(false)}
-                  className="flex-1 py-4 bg-white text-blue-950 rounded-2xl font-black text-sm transition-all shadow-lg active:scale-95"
-                >
-                  我知道了
-                </button>
+              <div className="pt-8 border-t border-white/10 space-y-6">
+                {/* Mobile Stats */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-white/5 rounded-xl p-3 text-center border border-white/5">
+                    <p className="text-[8px] text-white/30 uppercase mb-1">总访问量</p>
+                    <p className="text-sm font-bold text-blue-400">{sitePv || '...'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 text-center border border-white/5">
+                    <p className="text-[8px] text-white/30 uppercase mb-1">本页阅读</p>
+                    <p className="text-sm font-bold text-purple-400">{pagePv || '...'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 text-center border border-white/5">
+                    <p className="text-[8px] text-white/30 uppercase mb-1">访客人数</p>
+                    <p className="text-sm font-bold text-emerald-400">{siteUv || '...'}</p>
+                  </div>
+                </div>
+
+                {/* Mobile QRs */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="bg-white p-1 rounded-lg w-full aspect-square flex items-center justify-center">
+                      <img src={`${baseUrl}/学校微信公众号二维码.jpg`} className="w-full h-auto rounded" alt="微信" />
+                    </div>
+                    <span className="text-[8px] text-white/40 font-bold scale-90">公众号</span>
+                  </div>
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="bg-white p-1 rounded-lg w-full aspect-square flex items-center justify-center">
+                      <img src={`${baseUrl}/学校微信视频号二维码.jpg`} className="w-full h-auto rounded" alt="视频号" />
+                    </div>
+                    <span className="text-[8px] text-white/40 font-bold scale-90">视频号</span>
+                  </div>
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="bg-white p-1 rounded-lg w-full aspect-square flex items-center justify-center">
+                      <img src={`${baseUrl}/学校微博二维码.jpg`} className="w-full h-auto rounded" alt="微博" />
+                    </div>
+                    <span className="text-[8px] text-white/40 font-bold scale-90">微博</span>
+                  </div>
+                  <div className="flex flex-col items-center space-y-1">
+                    <div className="bg-white p-1 rounded-lg w-full aspect-square flex items-center justify-center">
+                      <img src={`${baseUrl}/学校抖音二维码.jpg`} className="w-full h-auto rounded" alt="抖音" />
+                    </div>
+                    <span className="text-[8px] text-white/40 font-bold scale-90">抖音</span>
+                  </div>
+                </div>
+
+                {/* Mobile Banner */}
+                <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/5 p-1">
+                  <img src={`${baseUrl}/扫码_搜索联合传播样式-标准色版.png`} className="w-full h-auto rounded-xl" alt="Banner" />
+                </div>
+
+                <div className="space-y-2 text-[10px] text-white/40 font-medium text-center">
+                  <p>© 2025 山西省财政税务专科学校</p>
+                  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
+                    陕ICP备20011108号-1
+                  </a>
+                </div>
+
+                <div className="flex space-x-3">
+                  <a href="https://www.sxftc.edu.cn/" target="_blank" rel="noopener noreferrer" className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm text-center">
+                    访问官网
+                  </a>
+                  <button onClick={() => setIsInfoOpen(false)} className="flex-1 py-4 bg-white/10 text-white rounded-2xl font-bold text-sm border border-white/10">
+                    我知道了
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -712,116 +870,121 @@ function App() {
           <div style={{ position: 'fixed', left: '-9999px', top: 0 }}>
             <div 
               ref={shareCardRef}
-              className="bg-[#F8FAFC] flex flex-col font-sans relative overflow-hidden"
-              style={{ width: '600px', minHeight: '960px' }}
+              className="bg-white flex flex-row font-sans relative overflow-hidden"
+              style={{ width: '1200px', height: '675px' }}
             >
-              {/* 1. Top Visual Area - Cinematic Impact */}
-              <div className="relative h-[560px] w-full shrink-0">
-                <img src={shareCardData.screenshot} className="w-full h-full object-cover" alt="Screenshot" />
+              {/* 1. Main Visual Section (Left) */}
+              <div className="relative w-[820px] h-full shrink-0 overflow-hidden bg-slate-100">
+                <img src={shareCardData.screenshot} className="w-full h-full object-cover scale-105" alt="Screenshot" />
                 
-                {/* Professional Gradient Mask - Stronger at bottom for text legibility */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                {/* Sophisticated Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 ring-[24px] ring-inset ring-white/10 pointer-events-none"></div>
                 
-                {/* Glassmorphism Badge */}
-                <div className="absolute top-8 left-8">
-                  <div className="px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/20 text-white text-[10px] font-black tracking-[0.3em] uppercase rounded-full shadow-2xl">
-                    Virtual Tour
+                {/* Top Brand Bar */}
+                <div className="absolute top-12 left-12">
+                  <div className="text-white">
+                    <p className="text-[11px] font-black tracking-[0.5em] uppercase opacity-60 mb-1">云端校园</p>
+                    <p className="text-2xl font-black tracking-[0.2em]">山西省财政税务专科学校</p>
                   </div>
                 </div>
 
-                {/* Scene Title - No Truncation, Dynamic Layout */}
-                <div className="absolute bottom-16 left-10 right-10">
-                  <div className="flex flex-col items-start space-y-3">
-                    <h3 className="text-white text-6xl font-black tracking-tighter leading-[1.1] drop-shadow-2xl">
+                {/* Bottom Scene Info */}
+                <div className="absolute bottom-12 left-12 right-12">
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="h-px w-12 bg-blue-500"></div>
+                    <span className="text-white/80 text-[10px] font-black tracking-[0.5em] uppercase">当前场景 · CURRENT SCENE</span>
+                  </div>
+                  <div className="w-full overflow-hidden">
+                    <h3 
+                      className="text-white font-black tracking-tighter leading-none drop-shadow-2xl mb-4 whitespace-nowrap"
+                      style={{ fontSize: shareCardData.sceneName.length > 6 ? '60px' : '80px' }}
+                    >
                       {shareCardData.sceneName}
                     </h3>
-                    <p className="text-blue-400 text-xs font-black tracking-[0.4em] uppercase opacity-90">
-                      Shanxi Finance & Taxation College
-                    </p>
                   </div>
+                  <p className="text-white/50 text-xs font-medium tracking-[0.4em] uppercase border-l-2 border-white/20 pl-4">
+                    360° 全景沉浸式体验校园美景
+                  </p>
                 </div>
               </div>
 
-              {/* 2. Floating Info Card - The Core Content */}
-              <div className="relative px-6 -mt-10 z-10">
-                <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] p-10 flex items-stretch justify-between border border-slate-50">
-                  
-                  {/* Left: School Identity & Contact */}
-                  <div className="flex flex-col justify-center py-1 pr-6 border-r border-slate-100 flex-1">
-                    <div className="space-y-6">
-                      
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-3 text-slate-600">
-                          <svg className="w-5 h-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                          <p className="text-base font-bold tracking-wide leading-tight">太原市万柏林区千峰南路25号</p>
-                        </div>
-                        <div className="flex flex-col space-y-4">
-                          <div className="flex items-center space-x-3 text-slate-600">
-                            <svg className="w-5 h-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                            <p className="text-base font-bold tracking-wide">030024</p>
-                          </div>
-                          <div className="flex items-center space-x-3 text-slate-600">
-                            <svg className="w-5 h-5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                            <p className="text-base font-bold tracking-wide">0351-6580599</p>
-                          </div>
-                        </div>
-                      </div>
+              {/* 2. Information & Interaction Section (Right) */}
+              <div className="flex-1 bg-white relative flex flex-col p-10">
+                {/* Subtle Background Pattern */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none overflow-hidden">
+                  <img src={`${baseUrl}/财专正方形logo.png`} className="absolute -right-20 -top-20 w-96 h-96 rotate-12" alt="" />
+                </div>
 
-                      <div className="pt-2">
-                        <div className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                          <p className="text-slate-500 font-mono text-xs font-bold uppercase tracking-widest">
-                            {window.location.hostname}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Main QR Entry */}
-                  <div className="flex flex-col items-center justify-center pl-10 shrink-0">
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-blue-600/10 blur-3xl rounded-full group-hover:bg-blue-600/20 transition-all"></div>
-                      <div className="relative bg-white p-3 rounded-[1.5rem] border border-slate-100 shadow-2xl">
+                {/* Content Wrapper */}
+                <div className="relative z-10 flex flex-col h-full">
+                  {/* QR Code Section - Smaller */}
+                  <div className="flex flex-col items-center mb-8">
+                    <div className="relative p-2 bg-gradient-to-br from-slate-50 to-slate-100 rounded-[2rem] shadow-inner">
+                      <div className="bg-white p-3 rounded-[1.5rem] shadow-xl border border-slate-100">
                         <QRCodeCanvas 
                           value={shareCardData.url}
-                          size={120}
+                          size={140}
                           level="H"
-                          includeMargin={true}
+                          includeMargin={false}
                           fgColor="#0f172a"
                         />
                       </div>
+                      {/* Decorative Corner Accents */}
+                      <div className="absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 border-blue-600 rounded-tl-xl"></div>
+                      <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-4 border-r-4 border-blue-600 rounded-br-xl"></div>
                     </div>
-                    <div className="mt-6 px-6 py-2.5 bg-blue-600 text-white text-[11px] font-black tracking-[0.2em] rounded-full shadow-lg shadow-blue-200 uppercase">
-                      扫码游览
-                    </div>
+                    <p className="mt-4 text-slate-900 font-black text-xs tracking-[0.3em] uppercase">扫码立即进入</p>
                   </div>
-                </div>
-              </div>
 
-              {/* 3. Footer - Minimalist & Integrated */}
-              <div className="mt-auto px-10 py-12">
-                <div className="flex items-center justify-between transition-all duration-700">
-                  <div className="flex flex-col">
-                    <p className="text-slate-900 font-black text-lg tracking-tight">更多资讯</p>
-                    <p className="text-slate-400 text-xs font-bold mt-1">关注出品方更多动态</p>
-                  </div>
-                  <div className="flex items-center space-x-8">
-                    <div className="h-10 w-px bg-slate-200"></div>
-                    <div className="max-w-[340px]">
-                      <img 
-                        src={`${baseUrl}/扫码_搜索联合传播样式-白色版.png`} 
-                        className="w-full h-auto block" 
-                        alt="WeChat Banner" 
-                      />
+                  {/* Contact Info - Clean List */}
+                  <div className="space-y-6 mb-auto px-2">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 shrink-0">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">校园地址</p>
+                        <p className="text-xs font-bold text-slate-700">太原市万柏林区千峰南路25号</p>
+                      </div>
                     </div>
+                    <div className="flex items-start space-x-4">
+                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 shrink-0">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">联系电话</p>
+                        <p className="text-xs font-bold text-slate-700">0351-6580599</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-4">
+                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 shrink-0">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">浏览网站</p>
+                        <p className="text-xs font-bold text-blue-600 tracking-tight">
+                          {window.location.origin.replace(/^https?:\/\//, '')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Branding */}
+                  <div className="pt-6">
+                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] text-center mb-3">关注出品方更多动态</p>
+                    <img 
+                      src={`${baseUrl}/扫码_搜索联合传播样式-白色版.png`} 
+                      className="w-full h-auto block" 
+                      alt="Footer Banner" 
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="max-w-sm w-full animate-float-slow">
+          <div className="max-w-4xl w-full animate-float-slow">
             <div className="relative">
               {/* Final Image for Saving */}
               {finalShareImage ? (
@@ -832,7 +995,7 @@ function App() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white/10 backdrop-blur-md rounded-[2rem] aspect-[3/4] flex flex-col items-center justify-center text-white space-y-6 border border-white/10">
+                <div className="bg-white/10 backdrop-blur-md rounded-[2rem] aspect-video flex flex-col items-center justify-center text-white space-y-6 border border-white/10">
                   <div className="relative w-16 h-16">
                     <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
                     <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
