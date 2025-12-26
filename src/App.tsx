@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toJpeg } from 'html-to-image';
+import { useVercount } from 'vercount-react';
 import PanoramaViewer from './components/PanoramaViewer';
 import MapOverlay from './components/MapOverlay';
 import { APP_DATA } from './data';
 
 function App() {
   const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const { sitePv, pagePv, siteUv } = useVercount();
   
   // Parse URL parameters for initial state
   const getInitialState = () => {
@@ -371,11 +373,28 @@ function App() {
             )}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-white/5 text-[10px] text-white/20 text-center uppercase tracking-[0.2em] space-y-1">
-            <p>© 2025 山西财专 · 云上游校园</p>
-            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors block">
-              陕ICP备20011108号-1
-            </a>
+          <div className="mt-6 pt-6 border-t border-white/5 flex flex-col space-y-4">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white/5 rounded-xl p-2 text-center border border-white/5">
+                <p className="text-[8px] text-white/30 uppercase tracking-tighter mb-1">总访问量</p>
+                <p className="text-xs font-bold text-blue-400">{sitePv || '...'}</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-2 text-center border border-white/5">
+                <p className="text-[8px] text-white/30 uppercase tracking-tighter mb-1">本页阅读</p>
+                <p className="text-xs font-bold text-purple-400">{pagePv || '...'}</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-2 text-center border border-white/5">
+                <p className="text-[8px] text-white/30 uppercase tracking-tighter mb-1">访客人数</p>
+                <p className="text-xs font-bold text-emerald-400">{siteUv || '...'}</p>
+              </div>
+            </div>
+
+            <div className="text-[10px] text-white/20 text-center uppercase tracking-[0.2em] space-y-1">
+              <p>© 2025 山西财专 · 云上游校园</p>
+              <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors block">
+                陕ICP备20011108号-1
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -616,6 +635,20 @@ function App() {
                     陕ICP备20011108号-1
                   </a>
                 </p>
+                <div className="pt-4 mt-4 border-t border-white/5 grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-[10px] text-white/30 mb-1">总访问量</p>
+                    <p className="text-sm font-bold text-blue-400">{sitePv || '...'}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-white/30 mb-1">本页阅读</p>
+                    <p className="text-sm font-bold text-purple-400">{pagePv || '...'}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-white/30 mb-1">访客人数</p>
+                    <p className="text-sm font-bold text-emerald-400">{siteUv || '...'}</p>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-8 flex items-center space-x-3">
