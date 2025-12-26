@@ -315,7 +315,7 @@ function App() {
       </button>
 
       {/* Sidebar */}
-      <div className={`absolute top-0 left-0 h-full w-72 md:w-85 bg-black/40 backdrop-blur-3xl z-30 transform transition-all duration-500 ease-out border-r border-white/10 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`absolute top-0 left-0 h-full w-72 md:w-85 bg-black/40 backdrop-blur-3xl z-[200] transform transition-all duration-500 ease-out border-r border-white/10 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 md:p-8 h-full flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <div>
